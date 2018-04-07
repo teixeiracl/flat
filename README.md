@@ -1,6 +1,6 @@
-# CoFee
+# FLAT
 
-Code for running CoFee baseline protocol using an IoT node, SP and IdP in the same machine using different ports.
+Code for running FLAT baseline protocol using an IoT node based on Arduino Due, SP and IdP in the Rapsberry or Linux PC.
 
 ## Instructions
 
