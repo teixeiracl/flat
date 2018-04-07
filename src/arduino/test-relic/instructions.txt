@@ -1,0 +1,55 @@
+# Primeiramente instale a IDE do arduino https://www.arduino.cc/en/Main/Software
+# Depois, instale o suporte à placa do Due (não vem por default)
+# Vá em Tools > Board > Boards Manager
+# Instale a versão 1.6.6 para Arduino SAM Boards
+# O arduino due tem duas portas USB, utilize a mais próxima da entrada de energia (aparece como programming port na IDE)
+
+# clonar o código corrente da relic                                                                                   
+
+git clone  https://github.com/relic-toolkit/relic.git
+cd relic/
+
+# agora vamos construir uma base para compilar a relic para a target, baseada nos
+# presets ja existentes na relic
+# No caso do Due seria o preset ardue-pbc-112.sh, que considera o diretório do
+# arduino com toda a toolchain esteja em
+# ARDUINO=${HOME}/.arduino15/packages/arduino/
+
+mkdir target-ardue
+git clone  https://github.com/relic-toolkit/relic.git
+
+cd target-ardue/
+../preset/ardue-pbc-112.sh ../
+make
+
+# neste ponto a relic foi buildada para a arquitetura target
+# dentro do diretorio ./lib está a biblioteca estática gerada librelic_s.a
+# dentro do ./include está o relic_conf.h
+# A partir de agora devemos compilar o nosso .ino para ser carregado no arduino
+# As próximas linhas são um exemplo para o meu caso com o ABS
+
+# Eu coloquei todo o código do abs dentro do RELIC.ino, para não ter trabalho com
+# linkagem, você deve adaptar seu código e construir as funções do arduino setup() e # loop()
+# O Makefile.ino também deve ser construído para seu caso. Use o meu como 
+# exemplo
+# Para esse Makefile.ino eu considero que a relic para a plataforma está compilada no diretório anterior (..), com a lib e os includes da relic lá
+# Por isso:
+
+cp -r lib/ ..
+cp include/relic_conf.h ../include/
+
+# compilar o programa para o arduino
+make -f Makefile.arduino clean
+make -f Makefile.arduino compile
+
+# Verificar se a compilacao foi feita com sucesso, caso positivo pode tentar fazer o upload
+# Conecta o arduino due na porta usb
+
+make -f Makefile.arduino clean
+make -f Makefile.arduino upload
+
+# Se houver problemas com upload talvez seja problema com baud rate, tente:
+# stty -F /dev/ttyACM0 speed 1200 cs8 -cstopb -parenb
+# ~/.arduino15/packages/arduino/tools/bossac/1.6.1-arduino/bossac -U false -e -w -v -b /home/lemosmaia/ASI/dev/relic-new/relic/target-ardue/build/RELIC.bin -R
+
+# para incluir a relic, veja como é feito no arquivo RELIC.ino
